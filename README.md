@@ -9,6 +9,7 @@ outpath is output directory
 
 Preparation
 
+```
 umi_tools whitelist --stdin ${R1} --bc-pattern=CCCCCCCCCCCCCCCCNNNNNNNNNN --set-cell-number=10000 --log2stderr > ${outpath}/whitelist.txt
 umi_tools extract --bc-pattern=CCCCCCCCCCCCCCCCNNNNNNNNNN \
                   --stdin ${R1} \
@@ -25,6 +26,6 @@ zcat ${outpath}/R2_extracted.fastq.gz | sed -n '2~4p' > ${outpath}/UMI_CB/Reads
 paste ${outpath}/UMI_CB/ID_CB_UMI ${outpath}/UMI_CB/Reads | awk -v OFS="\t" '{print$1,$4,$2,$3}' > ${outpath}/UMI_CB/cb.umi.tsv
 awk '$3!="" && $4!=""' ${outpath}/UMI_CB/cb.umi.tsv > ${outpath}/UMI_CB/CB_UMI
 sed -i '1i\Read.ID\tRead.Seq\tCell.BC\tUMI' ${outpath}/UMI_CB/CB_UMI
-
+```
 
 
