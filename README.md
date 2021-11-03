@@ -1,10 +1,10 @@
-# scar-barcode
+#SLin
 
-This pipeline is to reconstruct a tree from single cell sequencing with dynamic barcodes
+This package is to reconstruct a tree from provided reads. <br />
+If your file is a single cell sequencing data and you can give an annotation, <br />
+This package can also get the results of cell-cell relationship.<br />
 
-R1 is fq file 1
-R2 is fq file 2
-outpath is output directory
+
 
 
 Preparation
