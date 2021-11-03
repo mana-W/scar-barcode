@@ -1,4 +1,4 @@
-#SLin
+# SLin
 
 This package is to reconstruct a tree from provided reads. <br />
 If your file is a single cell sequencing data and you can give an annotation, <br />
