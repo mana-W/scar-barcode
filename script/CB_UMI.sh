@@ -1,7 +1,7 @@
 #umitools extract cell barcode & UMI
 
 R1=`echo $1`
-path=`echo ${R1%/*}`
+outpath=`echo ${R1%/*}`
 R2=`echo $2`
 
 
