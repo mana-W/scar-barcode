@@ -16,18 +16,31 @@ ReadFasta = function(filename){
   return(c("scarfull" = scarfull))
 }
 
-ReadCutsite = function(segref,type=NULL){
+ReadCutsite = function(segref,reftype=NULL){
     colnames(segref) = c("indx","start","end")   
     scar = NULL
     type = NULL
-    if(is.null(type)){
-    for (i in 2:nrow(segref)) {
+    if(is.null(reftype)){
+      for (i in 2:nrow(segref)) {
         scar = c(scar,segref[i,]$start:segref[i,]$end)
         type = c(type,rep(segref[i,]$indx,(segref[i,]$end-segref[i,]$start)+1))
-    }
-    scarseg = data.frame("scar" = scar,"type" = as.character(type))   
+      }
+      scarseg = data.frame("scar" = scar,"type" = as.character(type))   
     }else{
-      
+      endsite<-NA
+      for (i in 2:nrow(segref)) {
+        endsite<-c(endsite,segref[["end"]][i]+segref[["start"]][1])
+      }
+      endsite[nrow(segref)]<-segref[["end"]][1]
+      scarseg = data.frame("scar" = c(1:endsite[nrow(segref)]),"type" = NA)
+      #endsite<-is.na(endsite)
+      for (i in rev(endsite)) {
+        if(!is.na(i)){
+          scarseg$type[1:i]<-which(endsite==i)-1
+         }else{
+          break
+         }
+      }      
     }
      return(scarseg)
 }
@@ -241,7 +254,7 @@ INDELChangeForm = function(scarinfo,scarref,cln){
   environment(change_form_stat) <- .GlobalEnv
   environment(scarinfo) <- .GlobalEnv
   environment(scarref) <- .GlobalEnv
-  clusterExport(cl,c('INDEL_ranges','change_form_stat',"scarref"), envir = environment())
+  clusterExport(cl,c('scarinfo','change_form_stat',"scarref"), envir = environment())
   scar_form_p<-parLapply(cl,unlist(scarinfo$INDEL),change_form_stat)
   stopCluster(cl)
   scar_form<-unlist(scar_form_p)
@@ -254,4 +267,4 @@ INDELChangeForm = function(scarinfo,scarref,cln){
 
 
 
-scarform<-INDELChangeForm(scarinfo$INDEL,scarinfo$Scar,ref$scarfull,)
+scarform<-INDELChangeForm(scarinfo,scarinfo$Scar,ref$scarfull,)
