@@ -126,7 +126,7 @@ align_to_range = function(p,s,cut){
   return(list("del" = del,"ins" = ins))
   
 }
-FindScar = function(data,scarfull,scar,align_score=NULL,type=NULL,cln){
+FindScar = function(data,scarfull,scar,align_score=NULL,type=NULL,indel.coverage=NULL,cln){
   mat  =  nucleotideSubstitutionMatrix(match = 1, mismatch = -3)
   testFunction  =  function (data_in) {
     return(tryCatch(data_in, error=function(e) "unknown"))
@@ -146,7 +146,11 @@ FindScar = function(data,scarfull,scar,align_score=NULL,type=NULL,cln){
     #tycpe="none"
     s3<-DNAString(as.character(data))
     alig<-pairwiseAlignment(scarfull,s3,substitutionMatrix = mat,type="global-local",gapOpening = 6, gapExtension= 1)
-    scarshort = subseq(as.character(scarfull[[1]]),scar["start"][1,],scar["end"][1,])
+    if(is.null(indel.coverage)){
+      scarshort = subseq(as.character(scarfull[[1]]),scar["start"][1,],scar["end"][1,])
+    }else{
+      scarshort = as.character(scarfull[[1]])
+    }
     if(score(alig)<=align_score){
       r_read<-"unknown"
       r_scar<-"unknown"
@@ -164,7 +168,11 @@ FindScar = function(data,scarfull,scar,align_score=NULL,type=NULL,cln){
       
       p <- as.character(alignedPattern(alig)[[1L]])
       s <- as.character(alignedSubject(alig)[[1L]])
-      delins = align_to_range(p,s,scar["start"][1,])
+      if(is.null(indel.coverage)){
+        delins = align_to_range(p,s,scar["start"][1,])
+      }else{
+        delins = align_to_range(p,s,1)
+      }
       del = delins$del
       ins = delins$ins
       if(TRUE %in% (del@start<0) | TRUE %in% (ins@start<0)){
@@ -185,7 +193,8 @@ FindScar = function(data,scarfull,scar,align_score=NULL,type=NULL,cln){
   environment(type) <- .GlobalEnv
   environment(find_barcode) <- .GlobalEnv
   environment(testFunction) <- .GlobalEnv
-  clusterExport(cl,c('align_score','scarfull','scar','data','mat','find_barcode','testFunction',"align_to_range","type"),envir = environment())
+  environment(indel.coverage) <- .GlobalEnv
+  clusterExport(cl,c('align_score','scarfull','scar','data','mat','indel.coverage','find_barcode','testFunction',"align_to_range","type"),envir = environment())
   scar_BC = parLapply(cl,data$Read.Seq,find_barcode)
   stopCluster(cl)
   
