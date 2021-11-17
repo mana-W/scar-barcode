@@ -274,7 +274,8 @@ INDELChangeForm = function(scarinfo,scarref,cln){
   return(data)  
 }
 
-INDELCons = function(INDEL_ranges,data,method.use=NULL,scarref,outpath,scarfull,scar,cln){  
+INDELCons = function(scarinfo,scarref,scarfull,scar,method.use=NULL,indel.coverage=NULL,cln){  
+  data<-scarinfo$Scar
   Cell.BC<-data.frame(table(data$Cell.BC))
   Cell.BC<-Cell.BC[Cell.BC$Freq>1,]
   data<-data[data$Cell.BC %in% Cell.BC$Var1,]
