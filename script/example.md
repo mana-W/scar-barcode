@@ -20,7 +20,7 @@ scarinfo$Scar<-scarform
 ```
 #define scar pattern for each cell<br />
 ```
-cellsinfo<-
+cellsinfo<-INDELIdents(scarinfo,scarref=scarref_all,scarfull=ref,scar=cutsite,method.use="umi.num",indel.coverage="ALL",cln=4)
 ```
 
 #pattern visualization <br />
