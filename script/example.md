@@ -1,7 +1,8 @@
-#example<br />
-#data is from UMI_CB/CB_UMI<br />
-#fa is ref file<br />
-#cutsite is a file define each sgRNA start and end positon<br />
+example<br />
+data is from UMI_CB/CB_UMI<br />
+fa is ref file<br />
+cutsite is a file define each sgRNA start and end positon<br />
+celltype.tsv is a file include cell barcode and its' annotations, header: Cell.BC Cell.type
 
 ```
 library(Slin)
@@ -10,6 +11,7 @@ ref<-ReadFasta("V3.fasta")
 cutsite<-read.table("V3.cutSites",col.names = c("indx","start","end"))
 scarref<-ReadCutsite(cutsite)
 scarref_all<-ReadCutsite(cutsite,reftype="ALL")
+celltype<-read.table("celltype.tsv",header=T,stringsAsFactors=F)
 ```
 
 #array identify<br />
