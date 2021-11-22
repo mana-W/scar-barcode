@@ -24,5 +24,9 @@ scarinfo$Scar<-scarform
 ```
 cellsinfo<-INDELIdents(scarinfo,scarref=scarref_all,scarfull=ref,scar=cutsite,method.use="umi.num",indel.coverage="ALL",cln=4)
 ```
+tree reconstruct
+```
+tag<-TagDataProcess(cellsinfo$info,Cells=celltype)
+```
 
 #pattern visualization <br />
