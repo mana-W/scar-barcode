@@ -417,3 +417,47 @@ INDELIdents = function(scarinfo,scarref,scarfull,scar,method.use=NULL,indel.cove
   }
   return(list(indel=INDEL_ranges_man,info=data_con))
 }
+
+TagDataProcess = function(data,Cells,prefix=NULL){
+  TagStat = function(x) {
+    x = as.character(x)
+    umi = x[5]
+    CB = x[1]
+    x = x[2]
+    x = unlist(strsplit(x,"_|&"))
+    x = x[!x%in%c("NONE")]
+    x = unique(x)
+    if(length(x) == 0){
+      return(NA)
+    }else{
+      return(data.frame(Cell.BC = CB,Reads_num = umi,Tag = x))
+    }
+  } 
+ 
+  #tag = NULL
+  #common.CB = NULL
+  #if((dim(data)[1]>1)){
+   # for (i in 1:(dim(data)[1]-1)) {
+    #  common.CB = c(common.CB,intersect(data$Cell.BC[i], data$Cell.BC[i+1]))
+    #}
+  #}else{
+    #common.CB = data$Cell.BC[1]
+  #}
+  
+  #for (i in 1:dim(data)[1]) {
+    data=data[data$Cell.BC %in% Cells$Cell.BC,]
+    #data[[i]]=data[[i]][data[[i]]$Cell.BC %in% common.CB,]
+    tagi = apply(data,1,TagStat)
+    tagi = do.call("rbind",tagi)
+    tagi = na.omit(tagi)
+    tabi = data.frame(table(tagi$Tag)/length(as.character(unique(tagi$Cell.BC))))
+    #black list filter
+    if(!is.null(prefix)){
+      tagi$Tag = paste(prefix[i], tagi$Tag, sep = "")
+    }else{
+      tagi$Tag=tagi$Tag
+    }
+    #tag = rbind(tag,tagi)
+  #}
+  return(tagi)
+}
