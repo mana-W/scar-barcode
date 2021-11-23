@@ -9,6 +9,7 @@ library(parallel)
 library(pheatmap)
 library(reshape2)
 library(ggtree)
+library(data.tree)
 
 ReadFasta = function(filename){
   sv = read.table(filename)
@@ -418,7 +419,8 @@ INDELIdents = function(scarinfo,scarref,scarfull,scar,method.use=NULL,indel.cove
   return(list(indel=INDEL_ranges_man,info=data_con))
 }
 
-TagDataProcess = function(data,Cells,prefix=NULL){
+                                                                        
+TagDataProcess = function(data,Cells=NULL,prefix=NULL){  
   TagStat = function(x) {
     x = as.character(x)
     umi = x[5]
@@ -445,7 +447,9 @@ TagDataProcess = function(data,Cells,prefix=NULL){
   #}
   
   #for (i in 1:dim(data)[1]) {
-    data=data[data$Cell.BC %in% Cells$Cell.BC,]
+    if(!is.null(Cells)){
+      data=data[data$Cell.BC %in% Cells$Cell.BC,]
+    }
     #data[[i]]=data[[i]][data[[i]]$Cell.BC %in% common.CB,]
     tagi = apply(data,1,TagStat)
     tagi = do.call("rbind",tagi)
@@ -461,3 +465,93 @@ TagDataProcess = function(data,Cells,prefix=NULL){
   #}
   return(tagi)
 }
+                                                                        
+
+BuildTagTree = function(tag,Cells=NULL){
+  #tag stat
+  Tag = data.frame(table(tag$Tag))
+  tag$Cell.num = Tag$Freq[match(tag$Tag,Tag$Var1)]
+  tag_tab = acast(tag,Cell.BC~Tag)
+  tag_tab[!is.na(tag_tab)] = 1
+  tag_tab[is.na(tag_tab)] = 0
+  #tag integrate 
+  cell_tab = data.frame(table(tag$Cell.BC))
+  cell_tab = cell_tab[order(-cell_tab$Freq),]
+  tags_all = lapply(as.character(cell_tab$Var1),function(x){sort(as.character(tag$Tag[tag$Cell.BC == x]))})
+  tags_paste = sapply(tags_all,function(x){paste(x,collapse = "_")})
+  tags_tab = data.frame(table(tags_paste))
+  tags_tab$num = unlist(lapply(as.character(tags_tab$tags_paste),function(x){length(strsplit(x,split = "_")[[1]])}))
+  tags_tab = tags_tab[order(-tags_tab$num,-tags_tab$Freq),]
+  tags_uni = lapply(as.character(tags_tab$tags_paste),function(x){strsplit(x,split = "_")[[1]]})
+  Tag_1 = Tag[Tag$Var1 %in% unlist(tags_uni[tags_tab$num == 1]),]
+  Tag_1 = Tag_1[order(-Tag_1$Freq),]
+  tags_uni[tags_tab$num == 1] = as.list(as.character(Tag_1$Var1))
+  tags_tab[tags_tab$num == 1,] = tags_tab[tags_tab$num == 1,][match(as.character(Tag_1$Var1),
+                                                                    as.character(tags_tab$tags_paste[tags_tab$num==1])),]
+  
+  #node build
+  cluster_stat = function(i){
+    x = tags_uni[[i]]
+    n = tags_tab$num[i]
+    tags_belone = NA
+    for(y_ind in which(tags_tab$num<n)){
+      y=tags_uni[[y_ind]]
+      if(length(intersect(x,y))>0 & length(setdiff(y,x))==0){
+        tags_belone = y_ind
+        break
+      }else{
+        next
+      }
+    }
+    return(tags_belone)
+  }
+  
+  belons = sapply(which(tags_tab$num > 1),cluster_stat)
+  belons[tags_tab$num == 1]= NA
+  
+  Tags = as.list(which(tags_tab$num == 1))
+  names(Tags) = which(tags_tab$num == 1)
+  nodes = as.list(c(1:length(tags_tab$num)))
+  
+  for(i in c(1:length(tags_tab$num))){
+    n = belons[[i]]
+    while(!is.na(n)){
+      nodes[[i]] = c(n,nodes[[i]])
+      n = belons[[n]]
+    }
+  }
+  nodes_len = sapply(nodes,length)
+  
+  for(i in c(1:length(tags_tab$num))){
+    nodes[[i]] = as.character(tags_tab$tags_paste)[nodes[[i]]]
+    if(length(nodes[[i]])<max(nodes_len)){
+      nodes[[i]][(length(nodes[[i]])+1):max(nodes_len)] = NA
+    }else{
+      next
+    }
+  }
+  nodes=data.frame(do.call("rbind",nodes))
+  names(nodes) = paste("N",as.character(1:ncol(nodes)),sep = "")
+  nodes$pathString = do.call(paste, c("N0",nodes, sep="/"))
+  nodes$pathString = gsub("/NA","",nodes$pathString)
+  
+  #save tree figure and rds
+  population = as.Node(nodes)
+  saveNetwork(diagonalNetwork(ToListExplicit(population, unname = TRUE),
+                              margin = 10,fontSize = 8,width=15*dim(nodes)[2] ,height = 30*dim(nodes)[1]),
+              file = "tree.html")
+  
+  saveRDS(population,"tree.rds")
+  
+  #save celltype tab
+  cell_tab$tags = tags_paste
+  if(!is.na(Cells)){
+    cell_tab$celltype = Cells$Cell.type[match(as.character(cell_tab$Var1),Cells$Cell.BC)]
+  }
+  write.csv(cell_tab,"cell_tab.csv",row.names = F,quote = F)
+  return(list(population,cell_tab))
+  
+}
+                                                                        
+
+
