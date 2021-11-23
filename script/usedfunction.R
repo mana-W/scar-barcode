@@ -10,6 +10,7 @@ library(pheatmap)
 library(reshape2)
 library(ggtree)
 library(data.tree)
+library(networkD3)
 
 ReadFasta = function(filename){
   sv = read.table(filename)
@@ -545,13 +546,15 @@ BuildTagTree = function(tag,Cells=NULL){
   
   #save celltype tab
   cell_tab$tags = tags_paste
-  if(!is.na(Cells)){
+  if(!is.null(Cells)){
     cell_tab$celltype = Cells$Cell.type[match(as.character(cell_tab$Var1),Cells$Cell.BC)]
   }
   write.csv(cell_tab,"cell_tab.csv",row.names = F,quote = F)
-  return(list(population,cell_tab))
+  return(list(tree=population,info=cell_tab))
   
 }
+                                                                        
+
                                                                         
 
 
