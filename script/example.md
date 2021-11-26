@@ -41,6 +41,9 @@ plotinfo$p
 <p align="center">
 <img src="https://github.com/mana-W/scar-barcode/blob/main/image/tree_tag_pattern.png" width = "400" height = "500" align=center />
 </p >
+
+Or <br />
+
 ```
 plotinfo<-PlotTagTree(treeinfo = treeinfo,data.extract = "T",annotation = "F")
 plotinfo$p
