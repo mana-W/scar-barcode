@@ -24,11 +24,13 @@ scarinfo$Scar<-scarform
 ```
 cellsinfo<-INDELIdents(scarinfo,scarref=scarref_all,scarfull=ref,scar=cutsite,method.use="umi.num",indel.coverage="ALL",cln=4)
 ```
-tree reconstruct
+tree reconstruct and plot
 ```
 tag<-TagDataProcess(cellsinfo$info,Cells=celltype)
 treeinfo<-BuildTagTree(tag,Cells=celltype)
-
+plotinfo<-PlotTagTree(treeinfo = treeinfo,data.extract = "T",annotation = "T")
+plotinfo$p
 ```
+fig 1 <br />
 
 #pattern visualization <br />
