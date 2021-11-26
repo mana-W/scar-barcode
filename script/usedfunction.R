@@ -16,7 +16,8 @@ library(rlist)
 library(gtable)
 library(tidyverse)
 library(ape)
-
+library(ggnewscale)
+library(purrr)
 
 ReadFasta = function(filename){
   sv = read.table(filename)
@@ -560,6 +561,198 @@ BuildTagTree = function(tag,Cells=NULL){
   
 }
                                                                         
+
+PlotTagTree = function(treeinfo,data.extract=NULL,annotation=NULL,prefix=NULL){
+  tree=treeinfo$tree
+  celltab=treeinfo$info
+  
+  #1.trans data.tree to newick with internal node
+  td = ToDataFrameNetwork(tree)
+  from_node = unique(td$from)
+  td[which(td$to %in% from_node),"to"] = paste("node.",td[which(td$to %in% from_node),"to"],sep = "")
+  td = rbind(data.frame("from" = from_node, "to" = from_node),td)
+  td$from = paste("node.",td$from,sep = "")
+  td = td[which(td$to != "N0"),]
+  td_node = FromDataFrameNetwork(td)
+  tree_nwk = ToNewick(td_node)
+  write(tree_nwk,"tree.nwk")
+  
+  
+  #2.data build
+  #(1)tree_nwk for plotting tree
+  tree_nwk = read.tree("tree.nwk")
+  tl = tree_nwk$tip.label
+  
+  #(2)tree_cell_plot for plotting cell composition
+  tree_cell = celltab %>% group_by(tags, celltype) %>% summarise(count = sum(Freq))
+  tree_cell = dcast(tree_cell,tags~celltype,value.var = "count")
+  tree_cell[is.na(tree_cell)] = 0
+  #normlize
+  tree_cell[,-1] = log(tree_cell[,-1]+1)
+  tree_cell[,-1] = t(apply(tree_cell[,-1], 1, function(x) {x/sum(x)}))
+  tree_cell_l = melt(tree_cell)
+  #tree_cell_plot = tree_cell_l
+  
+  #option for cell composition bar plot
+  # tree_cell_l = melt(tree_cell)
+  # tree_cell_plot = left_join(data.frame(id=tl),tree_cell_l,by=c("id" = "tags"))
+  
+  #option for
+  # tree_cell_plot$variable = as.character(tree_cell_plot$variable)
+  # tree_cell_plot[which(tree_cell_plot$value>0),3] = tree_cell_plot[which(tree_cell_plot$value>0),2]
+  # tree_cell_plot[which(tree_cell_plot$value==0),3] = NA
+  
+  #(3)indel for plotting pattern
+  #library(stringr)
+  
+  indel = data.frame(id=NA,start=NA,end=NA,width=NA,type=NA)
+  indel = indel[-1,]
+  #build indel data frame
+  for(i in c(1:length(tl[-1]))){
+    x = tl[i]
+    x_str = unlist(strsplit(x,split = "_"))
+    del = NULL
+    ins = NULL
+    if(!is.null(prefix)){
+      for (k in 1:length(prefix)) {
+        x_pre = x_str[[1]][grepl(prefix[k], x_str[[1]])]
+        if(length(x_pre)>0){
+          x_pre_del = x_pre[grep("D",x_pre)]
+          if(length(x_pre_del) > 0){
+            x_pre_del = str_extract_all(x_pre_del, "[0-9]+")
+            for (j in 1:length(x_pre_del)) {
+              line = as.numeric(x_pre_del[[j]])
+              del = rbind(del, data.frame(id=x,start=line[length(line)] + (k-1)*300,
+                                          end=line[length(line)]+line[length(line)-1] + (k-1)*300,width=line[length(line)-1],
+                                          type="deletion"))
+            }
+            
+          }
+          x_pre_ins = x_pre[grep("I",x_pre)]
+          if(length(x_pre_ins) > 0){
+            x_pre_ins = str_extract_all(x_pre_ins, "[0-9]+")
+            for (j in 1:length(x_pre_ins)) {
+              line = as.numeric(x_pre_ins[[j]])
+              ins = rbind(ins, data.frame(id=x,start=line[length(line)] + (k-1)*300,
+                                          end=line[length(line)]+line[length(line)-1] + (k-1)*300,width=line[length(line)-1],
+                                          type="insertion"))
+            }
+          }
+          
+        }
+      }
+    }else{
+      x_pre_del = x_str[grep("D",x_str)]
+      if(length(x_pre_del) > 0){
+        x_pre_del = str_extract_all(x_pre_del, "[0-9]+")
+        for (j in 1:length(x_pre_del)) {
+          line = as.numeric(x_pre_del[[j]])
+          del = rbind(del, data.frame(id=x,start=line[length(line)] + (k-1)*300,
+                                      end=line[length(line)]+line[length(line)-1] + (k-1)*300,width=line[length(line)-1],
+                                      type="deletion"))
+        }
+        
+      }
+      x_pre_ins = x_str[grep("I",x_str)]
+      if(length(x_pre_ins) > 0){
+        x_pre_ins = str_extract_all(x_pre_ins, "[0-9]+")
+        for (j in 1:length(x_pre_ins)) {
+          line = as.numeric(x_pre_ins[[j]])
+          ins = rbind(ins, data.frame(id=x,start=line[length(line)] + (k-1)*300,
+                                      end=line[length(line)]+line[length(line)-1] + (k-1)*300,width=line[length(line)-1],
+                                      type="insertion"))
+        }
+      }
+    }
+    indel = rbind(indel,del,ins)
+  }
+  
+  
+  #(4)reorder tree
+  SortTree = function(label){
+    
+    #construct data structure
+    taglst = list()
+    for (i in 1:length(label)) {
+      tchr = label[i]
+      tline = strsplit(tchr,"_")
+      element = list("labels" = tchr,"tags" = tline[[1]], "tag_number" = length(tline[[1]]))
+      taglst[[i]] = element
+    }
+    taglst.sort = taglst[list.order(taglst,-tag_number)]
+    for (i in 2:(length(taglst.sort) - 1)) {
+      point = taglst.sort[[i]]
+      score = 0
+      for (j in (i+1):length(taglst.sort)) {
+        queue = taglst.sort[[j]]
+        qscore = length(intersect(point$tags,queue$tags))
+        
+        if(qscore > score){
+          score = qscore
+          taglst.sort[[j]] = NULL
+          taglst.sort = list.insert(taglst.sort,i+1,queue)
+        }
+      }
+    }
+    
+    
+    #result
+    label.sort = map_chr(taglst.sort, 1)
+  }
+  label.sort =  SortTree(tree_nwk$tip.label)
+  tree_data_sort = ape::rotateConstr(tree_nwk, label.sort)
+  
+  #3.plot integrated tree
+  #set expand can change width of the tree
+  p = ggtree(tree_data_sort,size = 0.1, ladderize=F) + geom_tiplab(size = 0.3) +
+    xlim_expand(c(0, 200),panel = "Tree")
+  
+  if(annotation=="F"){
+    p1=p + geom_facet(panel = "indel pattern", data = indel,
+                      geom = geom_segment,
+                      mapping = aes(x = start, xend = end, y =y, yend = y,color=type),
+                      size = 0.3)
+  }else{
+  p1 = p + geom_facet(panel = "cells",data = tree_cell_l,
+                      geom =  geom_tile,
+                      mapping = aes(x = as.numeric(as.factor(variable)),fill = value,color = variable)) +
+    #    scale_fill_viridis_d(option="D", name="discrete\nvalue") +
+    scale_fill_gradient(low = "white",high = "#440130")  +
+    new_scale_color() +
+    geom_facet(panel = "indel pattern", data = indel,
+               geom = geom_segment,
+               mapping = aes(x = start, xend = end, y =y, yend = y,color=type),
+               size = 0.3)
+  }
+  if(data.extract=="T" & annotation=="T"){
+    return(list(p=p1,tagsinfo=tree_cell,indelinfo=indel))
+  }else if(data.extract=="T" & is.null(annotation)){
+    return(list(p=p1,tagsinfo=tree_cell,indelinfo=indel))
+  }else if(data.extract=="T" & annotation=="F"){
+    return(list(p=p1,indelinfo=indel))
+  }else{
+    return(p1)
+  }
+  
+  # p1 = facet_plot(p,panel = "cell composition",data = tree_cell_l,
+  #                 geom = geom_barh,
+  #                 mapping = aes(x = value,fill = variable),
+  #                 stat="identity") %>%
+  #   facet_plot(panel = "indel pattern", data = indel,
+  #              geom = geom_segment,
+  #              mapping = aes(x = start, xend = end, y =y, yend = y,color=type),
+  #              size = 1)
+  
+  
+  #change facet grid
+  #gt = ggplot_gtable(ggplot_build(p1))
+  #gt$widths[7] = 0.5*gt$widths[7] # in this case it was colmun 7 - reduce the width by a half
+  #gt$widths[9] = 0.5*gt$widths[9] # in this case it was colmun 7 - reduce the width by a half
+  #grid.draw(gt) # plot with grid draw
+  
+  #ggsave(gt,filename = paste(outname,"pdf",sep = "."),height = 100,width = 15,units = "cm")
+}
+
 
                                                                         
 
