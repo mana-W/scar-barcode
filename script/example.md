@@ -2,7 +2,6 @@ example<br />
 data is from UMI_CB/CB_UMI<br />
 fa is ref file<br />
 cutsite is a file define each sgRNA start and end positon<br />
-optional<br />
 celltype.tsv is a file include cell barcode and its' annotations, header: Cell.BC Cell.type
 
 ```
@@ -29,6 +28,7 @@ tree reconstruct
 ```
 tag<-TagDataProcess(cellsinfo$info,Cells=celltype)
 treeinfo<-BuildTagTree(tag,Cells=celltype)
+
 ```
 
 #pattern visualization <br />
