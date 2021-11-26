@@ -11,6 +11,12 @@ library(reshape2)
 library(ggtree)
 library(data.tree)
 library(networkD3)
+library(stringr)
+library(rlist)
+library(gtable)
+library(tidyverse)
+library(ape)
+
 
 ReadFasta = function(filename){
   sv = read.table(filename)
