@@ -27,6 +27,7 @@ cellsinfo<-INDELIdents(scarinfo,scarref=scarref_all,scarfull=ref,scar=cutsite,me
 tree reconstruct
 ```
 tag<-TagDataProcess(cellsinfo$info,Cells=celltype)
+treeinfo<-BuildTagTree(tag,Cells=celltype)
 ```
 
 #pattern visualization <br />
