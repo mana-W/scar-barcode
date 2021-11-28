@@ -27,7 +27,12 @@ cellsinfo<-INDELIdents(scarinfo,scarref=scarref_all,scarfull=ref,scar=cutsite,me
 
 #pattern visualization <br />
 ```
+IndelPlot(cellsinfo = cellsinfo,scar=cutsite,indel.coverage="All")
 ```
+<p align="center">
+<img src="https://github.com/mana-W/scar-barcode/blob/main/image/Indel_pattern.png" width = "620" height = "450" align=center />
+</p >
+Then <br />
 
 tree reconstruct and plot
 ```
