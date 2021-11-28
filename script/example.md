@@ -33,8 +33,10 @@ IndelPlot(cellsinfo = cellsinfo,scar=cutsite,indel.coverage="All")
 <img src="https://github.com/mana-W/scar-barcode/blob/main/image/Indel_pattern.png" width = "620" height = "450" align=center />
 </p >
 Then <br />
+<br />
+<br />
 
-tree reconstruct and plot
+Tree reconstruct and plot
 ```
 tag<-TagDataProcess(cellsinfo$info,Cells=celltype)
 treeinfo<-BuildTagTree(tag,Cells=celltype)
