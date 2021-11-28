@@ -754,6 +754,67 @@ PlotTagTree = function(treeinfo,data.extract=NULL,annotation=NULL,prefix=NULL){
 }
 
 
-                                                                        
+IndelPlot<-function(cellsinfo,scar,indel.coverage=NULL){
+	INDEL_ranges<-cellsinfo$indel
+	del_ranges<-unlist(lapply(INDEL_ranges,function(x){x[1]}))
+	ins_ranges<-unlist(lapply(INDEL_ranges,function(x){x[2]}))
+	del_r<-del_ranges[[1]]
+	for(i in 2:length(del_ranges)){
+		del_r<-c(del_r,del_ranges[[i]])
+	}
+	ins_r<-ins_ranges[[1]]
+	for(i in 2:length(ins_ranges)){
+		ins_r<-c(ins_r,ins_ranges[[i]])
+	}
+	if(any(is.null(indel.coverage),indel.coverage=="Accurate")){
+		scarref<-data.frame(scar=NA,type=NA)
+		scarref<-scarref[-1,]
+		for(i in c(2:dim(scar)[1])){
+			scarref_sub<-data.frame(scar=c(scar$start[i]:(scar$end[i])),type=scar$indx[i])
+			scarref<-rbind(scarref,scarref_sub)
+		}
+	}else{
+		scarref<-data.frame(scar=NA,type=NA)
+		scarref<-scarref[-1,]
+		startP<-scar$start[1]
+		for(i in c(2:dim(scar)[1])){
+			scarref_sub<-data.frame(scar=c(scar$start[i]:(scar$end[i]))+startP,type=scar$indx[i])
+			scarref<-rbind(scarref,scarref_sub)
+		}
+	}
+	scarref$type<-as.character(scarref$type)
+	all_site_stat<-function(i,dat){
+		return(c(start(dat[i]):end(dat[i])))
+	}
+	#all_site_per_stat<-function(i,dat){
+	#	return(length(which(dat==i))/length(INDEL_ranges))
+	#}
+	
+	del_allsite<-unlist(lapply(seq(del_r),all_site_stat,dat=del_r))
+	del_allsite_per<-data.frame(table(del_allsite))
+	del_allsite_per$Freq<-del_allsite_per$Freq/length(INDEL_ranges)
+	names(del_allsite_per)[1]<-"Site"
+	del_allsite_per<-del_allsite_per[del_allsite_per$Site %in% c(1:scar$end[1]),]
+	del_allsite_per$Site<-as.numeric(as.character(del_allsite_per$Site))
+	del_allsite_per<-rbind(del_allsite_per,data.frame(Site=setdiff(c(1:scar$end[1]),del_allsite_per$Site),Freq=0))
+	p_del<-ggplot()+
+			geom_ribbon(data=scarref,aes(x=scar,ymin=0,ymax=max(del_allsite_per$Freq),fill=type),alpha=0.1)+
+			geom_line(data=del_allsite_per,aes(x=Site,y=Freq),size=1,colour="lightskyblue")+theme(legend.position="none")+
+			scale_x_continuous(breaks=c())+xlab("")+ylab("Deletion Frequency")+theme_bw()
+	
+	ins_allsite<-unlist(lapply(seq(ins_r),all_site_stat,dat=ins_r))
+	ins_allsite_per<-data.frame(table(ins_allsite))
+	ins_allsite_per$Freq<-ins_allsite_per$Freq/length(INDEL_ranges)
+	names(ins_allsite_per)[1]<-"Site"
+	ins_allsite_per<-ins_allsite_per[ins_allsite_per$Site %in% c(1:scar$end[1]),]
+	ins_allsite_per$Site<-as.numeric(as.character(ins_allsite_per$Site))
+	ins_allsite_per<-rbind(ins_allsite_per,data.frame(Site=setdiff(c(1:scar$end[1]),ins_allsite_per$Site),Freq=0))
+	p_ins<-ggplot()+
+			geom_ribbon(data=scarref,aes(x=scar,ymin=0,ymax=max(ins_allsite_per$Freq),fill=type),alpha=0.1)+
+			geom_line(data=ins_allsite_per,aes(x=Site,y=Freq),size=1,colour="indianred1")+theme(legend.position="none")+
+			scale_x_continuous(breaks=c())+xlab("")+ylab("Insertion Frequency")+theme_bw()
+	return(plot_grid(p_del,p_ins,nrow = 2))
+}
+                                                                     
 
 
