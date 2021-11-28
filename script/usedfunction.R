@@ -29,7 +29,7 @@ ReadCutsite = function(segref,reftype=NULL){
     colnames(segref) = c("indx","start","end")   
     scar = NULL
     type = NULL
-    if(is.null(reftype)){
+    if(is.null(reftype) | reftype=="Accurate"){
       for (i in 2:nrow(segref)) {
         scar = c(scar,segref[i,]$start:segref[i,]$end)
         type = c(type,rep(segref[i,]$indx,(segref[i,]$end-segref[i,]$start)+1))
@@ -155,7 +155,7 @@ FindScar = function(data,scarfull,scar,align_score=NULL,type=NULL,indel.coverage
     #tycpe="none"
     s3<-DNAString(as.character(data))
     alig<-pairwiseAlignment(scarfull,s3,substitutionMatrix = mat,type="global-local",gapOpening = 6, gapExtension= 1)
-    if(is.null(indel.coverage)){
+    if(is.null(indel.coverage) | indel.coverage=="Accurate"){
       scarshort = subseq(as.character(scarfull[[1]]),scar["start"][1,],scar["end"][1,])
     }else{
       scarshort = as.character(scarfull[[1]])
@@ -177,7 +177,7 @@ FindScar = function(data,scarfull,scar,align_score=NULL,type=NULL,indel.coverage
       
       p <- as.character(alignedPattern(alig)[[1L]])
       s <- as.character(alignedSubject(alig)[[1L]])
-      if(is.null(indel.coverage)){
+      if(is.null(indel.coverage)|indel.coverage=="Accurate"){
         delins = align_to_range(p,s,scar["start"][1,])
       }else{
         delins = align_to_range(p,s,1)
@@ -325,7 +325,7 @@ INDELIdents = function(scarinfo,scarref,scarfull,scar,method.use=NULL,indel.cove
           stopifnot(is(aligc, "PairwiseAlignments"), length(x) == 1L)
           p <- as.character(alignedPattern(aligc)[[1L]])
           s.cons <- as.character(alignedSubject(aligc)[[1L]])
-          if(is.null(indel.coverage)){
+          if(is.null(indel.coverage)|indel.coverage=="Accurate"){
             indel = align_to_range(p,s.cons,scar["start"][1,])
           }else{
             indel = align_to_range(p,s.cons,1)
