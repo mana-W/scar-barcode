@@ -1,9 +1,10 @@
-example<br />
+# Example<br />
 data is from UMI_CB/CB_UMI<br />
 fa is ref file<br />
 cutsite is a file define each sgRNA start and end positon<br />
 celltype.tsv is a file include cell barcode and its' annotations, header: Cell.BC Cell.type
 
+### Data importing
 ```
 library(Slin)
 data<-read.table("UMI_CB/CB_UMI",sep="\t",header=T)
@@ -14,18 +15,20 @@ scarref_all<-ReadCutsite(cutsite,reftype="All")
 celltype<-read.table("celltype.tsv",header=T,stringsAsFactors=F)
 ```
 
-#array identify<br />
+### Array identify<br />
+Alignment
+
 ```
 scarinfo<-FindScar(data=data,scarfull=ref,scar=cutsite,indel.coverage="All",type="test",cln=8)
 scarform<-INDELChangeForm(scarinfo,scarref = scarref_all,cln=4)
 scarinfo$Scar<-scarform
 ```
-#define scar pattern for each cell<br />
+Define scar pattern for each cell<br />
 ```
 cellsinfo<-INDELIdents(scarinfo,scarref=scarref_all,scarfull=ref,scar=cutsite,method.use="umi.num",indel.coverage="All",cln=4)
 ```
 
-#pattern visualization <br />
+Pattern visualization <br />
 ```
 IndelPlot(cellsinfo = cellsinfo,scar=cutsite,indel.coverage="All")
 ```
@@ -36,11 +39,30 @@ Then <br />
 <br />
 <br />
 
-Tree reconstruct and plot
+## Indel extracted
 ```
 tag<-TagDataProcess(cellsinfo$info,Cells=celltype)
+```
+
+## Tree reconstruct 
+```
 treeinfo<-BuildTagTree(tag,Cells=celltype)
 ```
+
+## Visualization
+
+Similarity of each pair of clusters
+```
+tag_dist=TagDist(tag,method = "spearman")
+```
+<p align="center"
+<img src="https://github.com/mana-W/scar-barcode/blob/main/image/Indel.png" width = "500" height = "300" align=center />
+</p >
+<p align="center"
+<img src="https://github.com/mana-W/scar-barcode/blob/main/image/cluster_similarity.png" width = "490" height = "450" align=center />
+</p >
+
+Visualization for tree 
 ```
 plotinfo<-PlotTagTree(treeinfo = treeinfo,data.extract = "T",annotation = "T")
 plotinfo$p
