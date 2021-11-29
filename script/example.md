@@ -19,13 +19,13 @@ celltype<-read.table("celltype.tsv",header=T,stringsAsFactors=F)
 Alignment
 
 ```
-scarinfo<-FindScar(data=data,scarfull=ref,scar=cutsite,indel.coverage="All",type="test",cln=8)
-scarform<-INDELChangeForm(scarinfo,scarref = scarref_all,cln=4)
+scarinfo<-FindIndel(data=data,scarfull=ref,scar=cutsite,indel.coverage="All",type="test",cln=8)
+scarform<-IndelForm(scarinfo,scarref = scarref_all,cln=4)
 scarinfo$Scar<-scarform
 ```
 Define scar pattern for each cell<br />
 ```
-cellsinfo<-INDELIdents(scarinfo,scarref=scarref_all,scarfull=ref,scar=cutsite,method.use="umi.num",indel.coverage="All",cln=4)
+cellsinfo<-IndelIdents(scarinfo,scarref=scarref_all,scarfull=ref,scar=cutsite,method.use="umi.num",indel.coverage="All",cln=4)
 ```
 
 Pattern visualization <br />
@@ -40,12 +40,12 @@ IndelPlot(cellsinfo = cellsinfo,scar=cutsite,indel.coverage="All")
 
 ### Indel extracted
 ```
-tag<-TagDataProcess(cellsinfo$info,Cells=celltype)
+tag<-TagProcess(cellsinfo$info,Cells=celltype)
 ```
 <br />
 ### Tree reconstruct 
 ```
-treeinfo<-BuildTagTree(tag,Cells=celltype)
+treeinfo<-BuildTree(tag,Cells=celltype)
 ```
 <br />
 ### Visualization
@@ -64,7 +64,7 @@ tag_dist=TagDist(tag,method = "spearman")
 
 ***Visualization for tree***
 ```
-plotinfo<-PlotTagTree(treeinfo = treeinfo,data.extract = "T",annotation = "T")
+plotinfo<-PlotTree(treeinfo = treeinfo,data.extract = "T",annotation = "T")
 plotinfo$p
 ```
 <p align="center">
