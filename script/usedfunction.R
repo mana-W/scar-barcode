@@ -155,7 +155,7 @@ FindScar = function(data,scarfull,scar,align_score=NULL,type=NULL,indel.coverage
     #tycpe="none"
     s3<-DNAString(as.character(data))
     alig<-pairwiseAlignment(scarfull,s3,substitutionMatrix = mat,type="global-local",gapOpening = 6, gapExtension= 1)
-    if(is.null(indel.coverage) | indel.coverage=="Accurate"){
+    if(any(is.null(indel.coverage),indel.coverage=="Accurate")){
       scarshort = subseq(as.character(scarfull[[1]]),scar["start"][1,],scar["end"][1,])
     }else{
       scarshort = as.character(scarfull[[1]])
@@ -177,7 +177,7 @@ FindScar = function(data,scarfull,scar,align_score=NULL,type=NULL,indel.coverage
       
       p <- as.character(alignedPattern(alig)[[1L]])
       s <- as.character(alignedSubject(alig)[[1L]])
-      if(is.null(indel.coverage)|indel.coverage=="Accurate"){
+      if(any(is.null(indel.coverage),indel.coverage=="Accurate")){
         delins = align_to_range(p,s,scar["start"][1,])
       }else{
         delins = align_to_range(p,s,1)
@@ -325,7 +325,7 @@ INDELIdents = function(scarinfo,scarref,scarfull,scar,method.use=NULL,indel.cove
           stopifnot(is(aligc, "PairwiseAlignments"), length(x) == 1L)
           p <- as.character(alignedPattern(aligc)[[1L]])
           s.cons <- as.character(alignedSubject(aligc)[[1L]])
-          if(is.null(indel.coverage)|indel.coverage=="Accurate"){
+          if(any(is.null(indel.coverage),indel.coverage=="Accurate")){
             indel = align_to_range(p,s.cons,scar["start"][1,])
           }else{
             indel = align_to_range(p,s.cons,1)
@@ -456,14 +456,18 @@ TagDataProcess = function(data,Cells=NULL,prefix=NULL){
   
   #for (i in 1:dim(data)[1]) {
     if(!is.null(Cells)){
-      data=data[data$Cell.BC %in% Cells$Cell.BC,]
+        data=data[data$Cell.BC %in% Cells$Cell.BC,]
+	data$Cell.type<-Cells$Cell.type[match(data$Cell.BC,Cells$Cell.BC)]
     }
     #data[[i]]=data[[i]][data[[i]]$Cell.BC %in% common.CB,]
     tagi = apply(data,1,TagStat)
     tagi = do.call("rbind",tagi)
     tagi = na.omit(tagi)
-    tabi = data.frame(table(tagi$Tag)/length(as.character(unique(tagi$Cell.BC))))
+    #tagi = data.frame(table(tagi$Tag)/length(as.character(unique(tagi$Cell.BC))))
     #black list filter
+    if(!is.null(Cells)){
+        tagi$Cell.type<-Cells$Cell.type[match(tagi$Cell.BC,Cells$Cell.BC)]
+    }
     if(!is.null(prefix)){
       tagi$Tag = paste(prefix[i], tagi$Tag, sep = "")
     }else{
