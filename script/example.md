@@ -55,10 +55,11 @@ Similarity of each pair of clusters
 ```
 tag_dist=TagDist(tag,method = "spearman")
 ```
-<p align="center"
+<p align="center">
 <img src="https://github.com/mana-W/scar-barcode/blob/main/image/Indel.png" width = "500" height = "300" align=center />
 </p >
-<p align="center"
+
+<p align="center">
 <img src="https://github.com/mana-W/scar-barcode/blob/main/image/cluster_similarity.png" width = "490" height = "450" align=center />
 </p >
 
