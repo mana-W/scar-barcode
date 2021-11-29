@@ -35,23 +35,22 @@ IndelPlot(cellsinfo = cellsinfo,scar=cutsite,indel.coverage="All")
 <p align="center">
 <img src="https://github.com/mana-W/scar-barcode/blob/main/image/Indel_pattern.png" width = "620" height = "450" align=center />
 </p >
-Then <br />
-<br />
 <br />
 
-## Indel extracted
+
+### Indel extracted
 ```
 tag<-TagDataProcess(cellsinfo$info,Cells=celltype)
 ```
-
-## Tree reconstruct 
+<br />
+### Tree reconstruct 
 ```
 treeinfo<-BuildTagTree(tag,Cells=celltype)
 ```
+<br />
+### Visualization
 
-## Visualization
-
-Similarity of each pair of clusters
+**Similarity of each pair of clusters**
 ```
 tag_dist=TagDist(tag,method = "spearman")
 ```
@@ -63,7 +62,7 @@ tag_dist=TagDist(tag,method = "spearman")
 <img src="https://github.com/mana-W/scar-barcode/blob/main/image/cluster_similarity.png" width = "490" height = "450" align=center />
 </p >
 
-Visualization for tree 
+***Visualization for tree***
 ```
 plotinfo<-PlotTagTree(treeinfo = treeinfo,data.extract = "T",annotation = "T")
 plotinfo$p
