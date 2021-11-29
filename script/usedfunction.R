@@ -821,4 +821,77 @@ IndelPlot<-function(cellsinfo,scar,indel.coverage=NULL){
 }
                                                                      
 
+TagDist<-function(tag,method=NULL){
+  one_jac_stat2<-function(l,VBC1,clone_stat_data){
+    VBC2<-as.numeric(clone_stat_data[,l])
+    num <- sum(sapply(1:length(VBC1), function(x)(min(VBC1[x],VBC2[x]))))
+    den <- sum(sapply(1:length(VBC1), function(x)(max(VBC1[x],VBC2[x]))))
+    return(num/den)
+  }
+  one_jac_stat1<-function(i,clone_stat_data){
+    VBC1<-as.numeric(clone_stat_data[,i])
+    return(unlist(lapply(clu,one_jac_stat2,VBC1=VBC1,clone_stat_data=clone_stat_data)))
+  }
+  one_op_stat2<-function(y,x,jac,jac_sample){
+    jac_real<-jac[x,y]
+    jac_pred<-as.numeric(unlist(lapply(jac_sample,function(z){z[x,y]})))
+    ob<-jac_real/mean(jac_pred)
+    zscore<-(jac_real-mean(jac_pred))/sd(jac_pred)
+    p<-pnorm(zscore,lower.tail = F)
+    return(c(ob,p))
+  }
+  one_op_stat1<-function(x,jac,jac_sample,clu){
+    return(lapply(clu,one_op_stat2,x=x,jac=jac,jac_sample=jac_sample))
+  }
+  
+  clone_tab<-acast(tag,Tag~Cell.type)
+  clu<-colnames(clone_tab)
+  clone_tab<-clone_tab[apply(clone_tab,1,sum)>=2,]
+  annotation_col = data.frame(Group=factor(unlist(str_extract_all(row.names(clone_tab), "[D|I]+"))))
+  row.names(annotation_col)<-rownames(clone_tab)
+  pheatmap(t(clone_tab),cluster_cols = F,cluster_rows = F,show_colnames = F,border=FALSE,annotation_col = annotation_col,scale = "row",filename = "tag_heatmap_scale.pdf",width = 5,height = 3)
+  
+  if(any(is.null(method),method=="Jaccard")){
+    all_jac<-data.frame(matrix(unlist(lapply(clu,one_jac_stat1,clone_stat_data=clone_tab)),ncol=length(clu)))
+    names(all_jac)<-clu
+    row.names(all_jac)<-clu
+    pheatmap(all_jac,file="group_dist.pdf",width = 4.9,height = 4.5)
+    return(all_jac)
+  }else if(method=="P"){
+    all_jac<-data.frame(matrix(unlist(lapply(clu,one_jac_stat1,clone_stat_data=clone_tab)),ncol=length(clu)))
+    names(all_jac)<-clu
+    row.names(all_jac)<-clu
+    jac_sample<-list()
+    for(t in c(1:500)){
+      tag$tags_sample<-sample(tag$Tag,length(tag$Tag))
+      clone_tab_sample_sub<-acast(tag,tags_sample~Cell.type)
+      jac_sample_sub<-data.frame(matrix(unlist(lapply(clu,one_jac_stat1,clone_stat_data=clone_tab_sample_sub)),ncol=length(clu)))
+      names(jac_sample_sub)<-clu
+      row.names(jac_sample_sub)<-clu
+      jac_sample<-c(jac_sample,list(jac_sample_sub))
+    }
+    
+    #plot pvalue
+    all_ob_p<-lapply(clu,one_op_stat1,jac=all_jac,jac_sample=jac_sample,clu=clu)
+    all_ob<-do.call("rbind",lapply(all_ob_p,function(x){unlist(x)[c(1:length(unlist(x)))[c(1:length(unlist(x)))%%2==1]]}))
+    all_ob<-data.frame(all_ob)
+    all_p<-do.call("rbind",lapply(all_ob_p,function(x){unlist(x)[c(1:length(unlist(x)))[c(1:length(unlist(x)))%%2==0]]}))
+    all_p<-data.frame(all_p)
+    names(all_ob)<-clu
+    row.names(all_ob)<-clu
+    names(all_p)<-clu
+    row.names(all_p)<-clu
+    
+    all_p[is.na(all_p)] = 0
+    pheatmap(-log2(all_p+min(all_p[all_p!=0])),main = "log2(P.val)",file="group_dist.pdf",width = 4.9,height = 4.7)	
+    return(all_p)	
+  }else if(method=="spearman"){
+    clone_tab_new<-t(apply(clone_tab,1,function(x){x/sum(x)}))
+    clone_tab_new<-apply(clone_tab_new,2,function(x){x/sum(x)})
+    cor_s<-cor(clone_tab_new,method = "spearman")
+    pheatmap(cor_s,file="group_dist.pdf",width = 4.9,height = 4.5)
+    return(cor_s)
+  }	
+}
+
 
