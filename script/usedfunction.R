@@ -135,7 +135,7 @@ align_to_range = function(p,s,cut){
   return(list("del" = del,"ins" = ins))
   
 }
-FindScar = function(data,scarfull,scar,align_score=NULL,type=NULL,indel.coverage=NULL,cln){
+FindIndel = function(data,scarfull,scar,align_score=NULL,type=NULL,indel.coverage=NULL,cln){
   mat  =  nucleotideSubstitutionMatrix(match = 1, mismatch = -3)
   testFunction  =  function (data_in) {
     return(tryCatch(data_in, error=function(e) "unknown"))
@@ -267,7 +267,7 @@ change_form_stat<-function(indel){
     return(paste(tag_all,collapse = "_"))
   }
 }
-INDELChangeForm = function(scarinfo,scarref,cln){
+IndelForm = function(scarinfo,scarref,cln){
   cl<-makeCluster(cln)
   environment(change_form_stat) <- .GlobalEnv
   environment(scarinfo) <- .GlobalEnv
@@ -284,7 +284,7 @@ INDELChangeForm = function(scarinfo,scarref,cln){
 }
 
 
-INDELIdents = function(scarinfo,scarref,scarfull,scar,method.use=NULL,indel.coverage=NULL,cln){
+IndelIdents = function(scarinfo,scarref,scarfull,scar,method.use=NULL,indel.coverage=NULL,cln){
   data<-scarinfo$Scar
   Cell.BC<-data.frame(table(data$Cell.BC))
   Cell.BC<-Cell.BC[Cell.BC$Freq>1,]
@@ -428,7 +428,7 @@ INDELIdents = function(scarinfo,scarref,scarfull,scar,method.use=NULL,indel.cove
 }
 
                                                                         
-TagDataProcess = function(data,Cells=NULL,prefix=NULL){  
+TagProcess = function(data,Cells=NULL,prefix=NULL){  
   TagStat = function(x) {
     x = as.character(x)
     umi = x[5]
@@ -479,7 +479,7 @@ TagDataProcess = function(data,Cells=NULL,prefix=NULL){
 }
                                                                         
 
-BuildTagTree = function(tag,Cells=NULL){
+BuildTree = function(tag,Cells=NULL){
   #tag stat
   Tag = data.frame(table(tag$Tag))
   tag$Cell.num = Tag$Freq[match(tag$Tag,Tag$Var1)]
@@ -566,7 +566,7 @@ BuildTagTree = function(tag,Cells=NULL){
 }
                                                                         
 
-PlotTagTree = function(treeinfo,data.extract=NULL,annotation=NULL,prefix=NULL){
+PlotTree = function(treeinfo,data.extract=NULL,annotation=NULL,prefix=NULL){
   tree=treeinfo$tree
   celltab=treeinfo$info
   
