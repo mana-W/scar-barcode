@@ -74,7 +74,7 @@ plotinfo$p
 Or <br />
 
 ```
-plotinfo<-PlotTagTree(treeinfo = treeinfo,data.extract = "T",annotation = "F")
+plotinfo<-PlotTree(treeinfo = treeinfo,data.extract = "T",annotation = "F")
 plotinfo$p
 ```
 <p align="center">
