@@ -42,12 +42,12 @@ IndelPlot(cellsinfo = cellsinfo,scar=cutsite,indel.coverage="All")
 ```
 tag<-TagProcess(cellsinfo$info,Cells=celltype)
 ```
-<br />
+
 ### Tree reconstruct 
 ```
 treeinfo<-BuildTree(tag,Cells=celltype)
 ```
-<br />
+
 ### Visualization
 
 **Similarity of each pair of clusters**
