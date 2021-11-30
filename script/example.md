@@ -14,6 +14,10 @@ scarref<-ReadCutsite(cutsite)
 scarref_all<-ReadCutsite(cutsite,reftype="All")
 celltype<-read.table("celltype.tsv",header=T,stringsAsFactors=F)
 ```
+Or load the example data
+```
+data("example_data",package = "LinTInd")
+```
 
 ### Array identify<br />
 Alignment
