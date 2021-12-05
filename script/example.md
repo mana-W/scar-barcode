@@ -24,17 +24,18 @@ Alignment
 
 ```
 scarinfo<-FindIndel(data=data,scarfull=ref,scar=cutsite,indel.coverage="All",type="test",cln=8)
-scarform<-IndelForm(scarinfo,scarref = scarref_all,cln=4)
+scarform<-IndelForm(scarinfo,cln=4)
 scarinfo$Scar<-scarform
+
 ```
 Define scar pattern for each cell<br />
 ```
-cellsinfo<-IndelIdents(scarinfo,scarref=scarref_all,scarfull=ref,scar=cutsite,method.use="umi.num",indel.coverage="All",cln=4)
+cellsinfo<-IndelIdents(scarinfo,method.use="umi.num",cln=4)
 ```
 
 Pattern visualization <br />
 ```
-IndelPlot(cellsinfo = cellsinfo,scar=cutsite,indel.coverage="All")
+IndelPlot(cellsinfo = cellsinfo)
 ```
 <p align="center">
 <img src="https://github.com/mana-W/scar-barcode/blob/main/image/Indel_pattern.png" width = "620" height = "450" align=center />
@@ -49,7 +50,7 @@ tag<-TagProcess(cellsinfo$info,Cells=celltype)
 
 ### Tree reconstruct 
 ```
-treeinfo<-BuildTree(tag,Cells=celltype)
+treeinfo<-BuildTree(tag)
 ```
 
 ### Visualization
