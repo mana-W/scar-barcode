@@ -7,12 +7,16 @@ celltype.tsv is a file include cell barcode and its' annotations, header: Cell.B
 ### Data importing
 ```
 library(LinTInd)
-data<-read.table("UMI_CB/CB_UMI",sep="\t",header=T)
-ref<-ReadFasta("V3.fasta")
-cutsite<-read.table("V3.cutSites",col.names = c("indx","start","end"))
+data<-paste0(system.file("extdata",package = 'LinTInd'),"/CB_UMI")
+fafile<-paste0(system.file("extdata",package = 'LinTInd'),"/V3.fasta")
+cutsite<-paste0(system.file("extdata",package = 'LinTInd'),"/V3.cutSites")
+celltype<-paste0(system.file("extdata",package = 'LinTInd'),"/celltype.tsv")
+data<-read.table(data,sep="\t",header=T)
+ref<-ReadFasta(fafile)
+cutsite<-read.table(cutsite,col.names = c("indx","start","end"))
 scarref<-ReadCutsite(cutsite)
 scarref_all<-ReadCutsite(cutsite,reftype="All")
-celltype<-read.table("celltype.tsv",header=T,stringsAsFactors=F)
+celltype<-read.table(celltype,header=T,stringsAsFactors=F)
 ```
 Or load the example data
 ```
